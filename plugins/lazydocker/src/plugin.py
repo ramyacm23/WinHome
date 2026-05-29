@@ -18,6 +18,7 @@ try:
 except ImportError:
     pass
 
+
 def deep_merge(dict1, dict2):
     """
     Deep merges dict2 into dict1.
@@ -40,12 +41,14 @@ def deep_merge(dict1, dict2):
 
     return merged, changed
 
+
 def get_config_path():
     appdata = os.environ.get("APPDATA", "")
     if not appdata:
         # Fallback for testing if APPDATA is not set
         appdata = os.path.expanduser("~\\AppData\\Roaming")
     return os.path.join(appdata, "lazydocker", "config.yml")
+
 
 def check_installed(args, request_id):
     installed = shutil.which("lazydocker.exe") is not None
@@ -57,8 +60,9 @@ def check_installed(args, request_id):
         "requestId": request_id,
         "success": True,
         "changed": False,
-        "data": installed
+        "data": installed,
     }
+
 
 def apply_config(args, context, request_id):
     settings = args.get("settings", {})
@@ -67,7 +71,7 @@ def apply_config(args, context, request_id):
             "requestId": request_id,
             "success": True,
             "changed": False,
-            "data": None
+            "data": None,
         }
 
     config_path = get_config_path()
@@ -83,8 +87,8 @@ def apply_config(args, context, request_id):
                     existing_config = parsed
         except Exception as e:
             sys.stderr.write(
-                "[lazydocker-plugin] Warning: Failed to parse "
-                f"existing config ({str(e)}). Backing up and starting fresh.\n"
+                "[lazydocker-plugin] Warning: Failed to parse existing config "
+                f"({str(e)}). Backing up and starting fresh.\n"
             )
 
             # Backup corrupted config
@@ -102,7 +106,7 @@ def apply_config(args, context, request_id):
             "requestId": request_id,
             "success": True,
             "changed": False,
-            "data": None
+            "data": None,
         }
 
     if not dry_run:
@@ -112,8 +116,9 @@ def apply_config(args, context, request_id):
                 os.makedirs(config_dir, mode=0o700, exist_ok=True)
 
             fd, temp_path = tempfile.mkstemp(
-                prefix="lazydocker-", suffix=".tmp",
-                dir=os.path.dirname(config_path)
+                prefix="lazydocker-",
+                suffix=".tmp",
+                dir=os.path.dirname(config_path),
             )
             try:
                 with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -129,7 +134,7 @@ def apply_config(args, context, request_id):
                 "success": False,
                 "changed": False,
                 "data": None,
-                "error": f"Failed to write config: {str(e)}"
+                "error": f"Failed to write config: {str(e)}",
             }
     else:
         sys.stderr.write(f"[lazydocker-plugin] Would update {config_path} with new merged config\n")
@@ -138,20 +143,25 @@ def apply_config(args, context, request_id):
         "requestId": request_id,
         "success": True,
         "changed": True,
-        "data": None
+        "data": None,
     }
+
 
 def main():
     try:
         raw_input = sys.stdin.read().strip()
         if not raw_input:
-            print(json.dumps({
-                "requestId": "unknown",
-                "success": False,
-                "changed": False,
-                "data": None,
-                "error": "Empty input received via stdin"
-            }))
+            print(
+                json.dumps(
+                    {
+                        "requestId": "unknown",
+                        "success": False,
+                        "changed": False,
+                        "data": None,
+                        "error": "Empty input received via stdin",
+                    }
+                )
+            )
             sys.stdout.flush()
             return
 
@@ -172,7 +182,7 @@ def main():
                     "success": False,
                     "changed": False,
                     "data": None,
-                    "error": f"Unknown command: {command}"
+                    "error": f"Unknown command: {command}",
                 }
         except Exception as inner_e:
             sys.stderr.write(f"[lazydocker-plugin] Command Error: {str(inner_e)}\n")
@@ -181,20 +191,25 @@ def main():
                 "success": False,
                 "changed": False,
                 "data": None,
-                "error": f"Internal Script Error: {str(inner_e)}"
+                "error": f"Internal Script Error: {str(inner_e)}",
             }
 
         print(json.dumps(response))
         sys.stdout.flush()
     except Exception as e:
         sys.stderr.write(f"[lazydocker-plugin] Error: {str(e)}\n")
-        print(json.dumps({
-            "requestId": "unknown",
-            "success": False,
-            "changed": False,
-            "data": None,
-            "error": f"Plugin crashed: {str(e)}"
-        }))
+        print(
+            json.dumps(
+                {
+                    "requestId": "unknown",
+                    "success": False,
+                    "changed": False,
+                    "data": None,
+                    "error": f"Plugin crashed: {str(e)}",
+                }
+            )
+        )
+
 
 if __name__ == "__main__":
     main()

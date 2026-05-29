@@ -41,7 +41,12 @@ class TestYasbPlugin(unittest.TestCase):
 
             with patch.dict(os.environ, {"USERPROFILE": tmp_dir}), patch("plugin.shutil.which", return_value=None):
                 response = self.run_main(
-                    {"requestId": "req-2", "command": "check_installed", "args": {}, "context": {}}
+                    {
+                        "requestId": "req-2",
+                        "command": "check_installed",
+                        "args": {},
+                        "context": {},
+                    }
                 )
 
         self.assertTrue(response["success"])
@@ -201,8 +206,7 @@ class TestYasbPlugin(unittest.TestCase):
 
             backup_dir = os.path.dirname(config_path)
             backups = [
-                name for name in os.listdir(backup_dir)
-                if name.startswith("config.yaml.") and name.endswith(".bak")
+                name for name in os.listdir(backup_dir) if name.startswith("config.yaml.") and name.endswith(".bak")
             ]
 
             self.assertTrue(response["success"])
