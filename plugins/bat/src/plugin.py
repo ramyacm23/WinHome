@@ -118,6 +118,8 @@ def parse_line(line: str) -> ConfigLine:
         return ConfigLine(raw=line, key=key, value=value, managed=True)
 
     return ConfigLine(raw=line, key=None, value=None, managed=False)
+
+
 def parse_config(text: str) -> Tuple[List[ConfigLine], bool]:
     """Returns (lines, corrupted)."""
     # This parser is line-based and should be resilient.
@@ -153,9 +155,7 @@ def build_setting_line(key: str, value: Any) -> str:
     return f"{key}={s}"
 
 
-def merge_settings(
-    lines: List[ConfigLine], settings: Dict[str, Any]
-) -> Tuple[List[ConfigLine], bool]:
+def merge_settings(lines: List[ConfigLine], settings: Dict[str, Any]) -> Tuple[List[ConfigLine], bool]:
     # Normalize incoming keys to ensure they start with --
     normalized: Dict[str, Any] = {}
     for k, v in settings.items():
@@ -227,6 +227,7 @@ def merge_settings(
     # NOTE: merge_settings does not mark corruption.
     # Corruption is handled at file-load time.
     return lines, changed
+
 
 def backup_corrupt_config(config_path: Path) -> Path:
     backup_path = config_path.parent / f"{config_path.name}.corrupt.{uuid.uuid4()}"
@@ -358,9 +359,7 @@ def dispatch(request: dict) -> Any:
     if command == "set":
         return handle_set(request)
 
-    return make_response(
-        request.get("requestId"), False, False, {}, f"Unknown command: {command}"
-    )
+    return make_response(request.get("requestId"), False, False, {}, f"Unknown command: {command}")
 
 
 def main() -> None:
@@ -402,11 +401,7 @@ def main() -> None:
         result = dispatch(request)
     except Exception as exc:
         result = make_response(
-            (
-                request.get("requestId", "unknown")
-                if isinstance(request, dict)
-                else "unknown"
-            ),
+            (request.get("requestId", "unknown") if isinstance(request, dict) else "unknown"),
             False,
             False,
             {},
@@ -424,4 +419,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
