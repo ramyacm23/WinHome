@@ -7,8 +7,6 @@ from pathlib import Path
 # Note: these tests are written for the repository's expected testing environment.
 # In this execution environment, pytest may not be installed.
 
-
-
 PLUGIN = Path(__file__).resolve().parents[1] / "src" / "plugin.py"
 
 

@@ -118,9 +118,6 @@ def parse_line(line: str) -> ConfigLine:
         return ConfigLine(raw=line, key=key, value=value, managed=True)
 
     return ConfigLine(raw=line, key=None, value=None, managed=False)
-
-
-
 def parse_config(text: str) -> Tuple[List[ConfigLine], bool]:
     """Returns (lines, corrupted)."""
     # This parser is line-based and should be resilient.
@@ -156,7 +153,9 @@ def build_setting_line(key: str, value: Any) -> str:
     return f"{key}={s}"
 
 
-def merge_settings(lines: List[ConfigLine], settings: Dict[str, Any]) -> Tuple[List[ConfigLine], bool]:
+def merge_settings(
+    lines: List[ConfigLine], settings: Dict[str, Any]
+) -> Tuple[List[ConfigLine], bool]:
     # Normalize incoming keys to ensure they start with --
     normalized: Dict[str, Any] = {}
     for k, v in settings.items():
@@ -198,7 +197,14 @@ def merge_settings(lines: List[ConfigLine], settings: Dict[str, Any]) -> Tuple[L
             # Ensure we add a newline if file doesn't end with one.
             insertion = new_line
             if not lines:
-                lines = [ConfigLine(raw=insertion + "\n", key=key, value=stringify_value(value), managed=True)]
+                lines = [
+                    ConfigLine(
+                        raw=insertion + "\n",
+                        key=key,
+                        value=stringify_value(value),
+                        managed=True,
+                    )
+                ]
                 changed = True
                 continue
             last_raw = lines[-1].raw
@@ -216,11 +222,11 @@ def merge_settings(lines: List[ConfigLine], settings: Dict[str, Any]) -> Tuple[L
             )
             changed = True
 
-    # Normalize any managed line with malformed content? Keep unknown/unmanaged untouched.
-    # NOTE: merge_settings does not mark corruption; corruption is handled at file-load time.
+    # Normalize any managed line with malformed content.
+    # Keep unknown/unmanaged untouched.
+    # NOTE: merge_settings does not mark corruption.
+    # Corruption is handled at file-load time.
     return lines, changed
-
-
 
 def backup_corrupt_config(config_path: Path) -> Path:
     backup_path = config_path.parent / f"{config_path.name}.corrupt.{uuid.uuid4()}"
@@ -328,7 +334,12 @@ def handle_set(request: dict) -> Dict[str, Any]:
             data["backupPath"] = str(backup_path)
 
         write_atomic(config_path, proposed)
-        return make_response(request_id, True, True, data | ({"backupPath": str(backup_path)} if backup_path else {}))
+        return make_response(
+            request_id,
+            True,
+            True,
+            data | ({"backupPath": str(backup_path)} if backup_path else {}),
+        )
 
     except Exception as exc:
         return make_response(request_id, False, False, {}, str(exc))
@@ -374,7 +385,13 @@ def main() -> None:
     try:
         request = json.loads(raw)
     except Exception as exc:
-        result = make_response(None, False, False, {}, f"Failed to parse request: {exc}")
+        result = make_response(
+            None,
+            False,
+            False,
+            {},
+            f"Failed to parse request: {exc}",
+        )
         sys.stdout.write(json.dumps(result) + "\n")
         sys.stdout.flush()
         return
@@ -385,7 +402,11 @@ def main() -> None:
         result = dispatch(request)
     except Exception as exc:
         result = make_response(
-            request.get("requestId", "unknown") if isinstance(request, dict) else "unknown",
+            (
+                request.get("requestId", "unknown")
+                if isinstance(request, dict)
+                else "unknown"
+            ),
             False,
             False,
             {},

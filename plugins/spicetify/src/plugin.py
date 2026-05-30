@@ -14,6 +14,7 @@ def log(msg):
     sys.stderr.write(f"[spicetify-plugin] {msg}\n")
     sys.stderr.flush()
 
+
 def backup_corrupt_config(file_path: str):
     if not os.path.exists(file_path):
         return
@@ -76,7 +77,10 @@ def merge_settings(config: configparser.ConfigParser, settings: dict) -> bool:
         for key, value in values.items():
             normalized = normalize_value(value)
 
-            if not config.has_option(section, key) or config.get(section, key) != normalized:
+            if (
+                not config.has_option(section, key)
+                or config.get(section, key) != normalized
+            ):
                 config.set(section, key, normalized)
                 changed = True
 
